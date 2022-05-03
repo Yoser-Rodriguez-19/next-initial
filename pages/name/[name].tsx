@@ -133,7 +133,8 @@ export const getStaticPaths: GetStaticPaths = async (ctx) => {
     paths: pokemonNames.map((name) => ({ 
       params: { name: name } 
     })),
-    fallback: false // asi le decimos que de un 404 si el path no esta definido 
+    // fallback: false // asi le decimos que de un 404 si el path no esta definido 
+    fallback: 'blocking'
   }
 }
 
@@ -146,13 +147,24 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
 
   const { name } = ctx.params as { name: string }; // le decimos que los parametros van a lucir como un id de tipo string
   
+  const pokemon = await getPokemonInfo(name);
 
   // const { data } = await pokeApi.get<PokemonListResponse>('/pokemon?limit=151');
 
+  if ( !pokemon ) {
+    // si no existe el pokemon
+    return {
+      redirect: {
+        destination: '/', // redireccionamos a la pagina principal
+        permanent: false // le decimos que no es permanente
+      }
+    }
+
+  }
 
   return {
     props: {
-      pokemon: await getPokemonInfo( name )
+      pokemon
     }
   }
 }

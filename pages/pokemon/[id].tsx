@@ -146,7 +146,8 @@ export const getStaticPaths: GetStaticPaths = async (ctx) => {
     //     }
     //   }
     // ],
-    fallback: false // asi le decimos que de un 404 si el path no esta definido 
+    // fallback: false // asi le decimos que de un 404 si el path no esta definido 
+    fallback: 'blocking' // nos deja pasar al getStaticProps y le pasamos los argumentos que le enviemos
   }
 }
 
@@ -160,10 +161,24 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
   const { id } = ctx.params as { id: string }; // le decimos que los parametros van a lucir como un id de tipo string
   
 
+  const pokemon = await getPokemonInfo( id ); // ahora mi poquemon puede ser el objeto o puede ser null
+
+  if ( !pokemon ) {
+    // si no existe el pokemon
+    return {
+      redirect: {
+        destination: '/', // redireccionamos a la pagina principal
+        permanent: false // le decimos que no es permanente
+      }
+    }
+
+  }
+
   return {
     props: {
-      pokemon: await getPokemonInfo( id )
-    }
+      pokemon
+    },
+    revalidate: 86400 // un dia // esto es para que se ejecute de nuevo el getStaticProps cuando se actualice la pagina
   }
 }
 
